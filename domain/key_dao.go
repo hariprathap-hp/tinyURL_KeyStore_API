@@ -7,11 +7,26 @@ import (
 )
 
 const (
-	queryPopulateKeyDB = "INSERT into keys (token_id) values (?)"
+	queryPopulateKeyDB = "INSERT into keys_avail (token_id) values (?)"
+	queryGetKey        = "select token_id from keys_avail limit 1"
 )
 
-func (k *Key) Get() (*string, *errors.RestErr) {
-	return nil, nil
+func (k *Key) Get() (*Key, *errors.RestErr) {
+	iter := dbCassandra.GetSession().Query(queryGetKey).Iter()
+
+	m := map[string]interface{}{}
+	var results []Key
+	for iter.MapScan(m) {
+		results = append(results, Key{
+			Token: m["token_id"].(string),
+		})
+		m = map[string]interface{}{}
+	}
+	if err := iter.Close(); err != nil {
+		fmt.Println(err.Error())
+		return nil, errors.NewInternalServerError(err.Error())
+	}
+	return &results[0], nil
 }
 
 func (k *Key) Populate() *errors.RestErr {

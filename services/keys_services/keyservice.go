@@ -17,7 +17,12 @@ type keyServicesInterface interface {
 }
 
 func (ks *keyservices) Get() (*string, *errors.RestErr) {
-	return nil, nil
+	var key dom_keys.Key
+	result, err := key.Get()
+	if err != nil {
+		return nil, err
+	}
+	return &result.Token, nil
 }
 
 func (ks *keyservices) Populate() *errors.RestErr {

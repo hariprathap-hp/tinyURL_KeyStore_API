@@ -11,8 +11,9 @@ func GetKey(c *gin.Context) {
 	s, err := keys_services.KeyService.Get()
 	if err != nil {
 		c.JSON(err.Status, err)
+		return
 	}
-	c.JSON(http.StatusOK, s)
+	c.JSON(http.StatusOK, *s)
 }
 
 func PopulateKeys(c *gin.Context) {
