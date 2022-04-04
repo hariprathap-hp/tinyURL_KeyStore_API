@@ -1,4 +1,4 @@
-package dom_keys
+package dom_kgs
 
 import (
 	"fmt"

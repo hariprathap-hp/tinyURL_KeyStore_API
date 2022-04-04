@@ -1,4 +1,4 @@
-package dom_keys
+package dom_kgs
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ const (
 	queryDeleteKey         = "delete from keys_avail where token_id = ?"
 )
 
-func (k *Key) Get(cnt int) (*Key, *errors.RestErr) {
+func (k *Key) Get(cnt int, isCache bool) ([]Key, *errors.RestErr) {
 	iter := dbCassandra.GetSession().Query(queryGetKey, cnt).Iter()
 
 	m := map[string]interface{}{}
@@ -25,23 +25,26 @@ func (k *Key) Get(cnt int) (*Key, *errors.RestErr) {
 		})
 		m = map[string]interface{}{}
 	}
+	fmt.Println(results)
 	if err := iter.Close(); err != nil {
 		fmt.Println(err.Error())
 		return nil, errors.NewInternalServerError(err.Error())
 	}
 
 	//delete it from un_used keys table and move it to used keys table
-	if err := delete(results[0].Token); err != nil {
-		return nil, errors.NewInternalServerError(err.Message)
+	for i := 0; i < cnt; i++ {
+		if err := delete(results[i].Token); err != nil {
+			return nil, errors.NewInternalServerError(err.Message)
+		}
+		if err := k.Populate(results[0].Token); err != nil {
+			return nil, errors.NewInternalServerError(err.Message)
+		}
 	}
 
-	//move it to used_keys table
-	k.Populate(results[0].Token)
-	return &results[0], nil
+	return results, nil
 }
 
 func (k *Key) Populate(count string) *errors.RestErr {
-	fmt.Println("Inside Populate")
 	if strings.Compare(count, "populate") == 0 {
 		for i := 0; i < 25000; i++ {
 			id := getID()

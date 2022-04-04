@@ -24,3 +24,13 @@ func PopulateKeys(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, "Keys are Populated")
 }
+
+func CacheKeys(c *gin.Context) {
+	err := keys_services.KeyService.Cache()
+	if err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, "Values cached")
+}
