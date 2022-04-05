@@ -60,7 +60,6 @@ func (ks *keyservices) Cache() *errors.RestErr {
 	return nil
 }
 
-func PopulateRedis(keys []string) *errors.RestErr {
+func PopulateRedis(keys []string) {
 	kgs_cache.Set(keys)
-	return nil
 }

@@ -36,7 +36,7 @@ func (k *Key) Get(cnt int, isCache bool) ([]Key, *errors.RestErr) {
 		if err := delete(results[i].Token); err != nil {
 			return nil, errors.NewInternalServerError(err.Message)
 		}
-		if err := k.Populate(results[0].Token); err != nil {
+		if err := k.Populate(results[i].Token); err != nil {
 			return nil, errors.NewInternalServerError(err.Message)
 		}
 	}
