@@ -1,9 +1,7 @@
 package keystore
 
 import (
-	"encoding/json"
 	"fmt"
-	dom_kgs "test3/hariprathap-hp/system_design/tinyURL_KeyStore_API/domain"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -32,21 +30,15 @@ func (cache *redisCache) getClient() *redis.Client {
 	})
 }
 
-func (cache *redisCache) Set(key string, value string) {
+func (cache *redisCache) Set(keys []string) {
 	client := cache.getClient()
-
-	fmt.Println("Setting Keys in Redis")
-	fmt.Println(key, value)
-	client.Set(key, value, cache.expires*time.Second)
+	fmt.Println("Setting Keys in a Redis List")
+	client.LPush("kgs", keys)
 }
 
-func (cache *redisCache) Get(key string) *dom_kgs.Key {
+func (cache *redisCache) Get() string {
 	client := cache.getClient()
-	val, err := client.Get(key).Result()
-	if err != nil {
-		return nil
-	}
-	res := dom_kgs.Key{}
-	json.Unmarshal([]byte(val), &res)
-	return &res
+	key := client.LPop("kgs")
+	fmt.Println(key.Val())
+	return key.Val()
 }

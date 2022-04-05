@@ -1,6 +1,7 @@
 package keys_services
 
 import (
+	"fmt"
 	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
 	dom_keys "test3/hariprathap-hp/system_design/tinyURL_KeyStore_API/domain"
 	keystore "test3/hariprathap-hp/system_design/tinyURL_KeyStore_API/redis"
@@ -25,12 +26,16 @@ type keyServicesInterface interface {
 }
 
 func (ks *keyservices) Get() (*string, *errors.RestErr) {
-	var key dom_keys.Key
-	result, err := key.Get(1, false)
-	if err != nil {
-		return nil, err
+	fmt.Println("Inside Get services")
+	for {
+		if k := kgs_cache.Get(); k != "" {
+			return &k, nil
+		}
+		//if the list is empty, cache the keys again and get key from the cache
+		if err := ks.Cache(); err != nil {
+			return nil, err
+		}
 	}
-	return &result[0].Token, nil
 }
 
 func (ks *keyservices) Populate() *errors.RestErr {
@@ -56,8 +61,6 @@ func (ks *keyservices) Cache() *errors.RestErr {
 }
 
 func PopulateRedis(keys []string) *errors.RestErr {
-	for _, v := range keys {
-		kgs_cache.Set(v, v+"a")
-	}
+	kgs_cache.Set(keys)
 	return nil
 }
