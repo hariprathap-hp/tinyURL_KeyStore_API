@@ -25,9 +25,7 @@ func (k *Key) Get(cnt int, isCache bool) ([]Key, *errors.RestErr) {
 		})
 		m = map[string]interface{}{}
 	}
-	fmt.Println(results)
 	if err := iter.Close(); err != nil {
-		fmt.Println(err.Error())
 		return nil, errors.NewInternalServerError(err.Error())
 	}
 

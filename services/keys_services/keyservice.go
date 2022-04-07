@@ -1,10 +1,10 @@
 package keys_services
 
 import (
-	"fmt"
 	dom_keys "test3/hariprathap-hp/system_design/tinyURL_KeyStore_API/domain"
 	keystore "test3/hariprathap-hp/system_design/tinyURL_KeyStore_API/redis"
 	"test3/hariprathap-hp/system_design/utils_repo/errors"
+	zlogger "test3/hariprathap-hp/system_design/utils_repo/log_utils"
 )
 
 var kgs_cache keystore.KGScache
@@ -20,16 +20,20 @@ var (
 type keyservices struct{}
 
 type keyServicesInterface interface {
-	Get() (*string, *errors.RestErr)
+	Get() ([]string, *errors.RestErr)
 	Populate() *errors.RestErr
 	Cache() *errors.RestErr
 }
 
-func (ks *keyservices) Get() (*string, *errors.RestErr) {
-	fmt.Println("Inside Get services")
+func (ks *keyservices) Get() ([]string, *errors.RestErr) {
+	zlogger.Info("service keystore: func Get(): getting keys to be distributed to the clients")
 	for {
-		if k := kgs_cache.Get(); k != "" {
-			return &k, nil
+		if k := kgs_cache.Get(); len(k) != 0 {
+			//renew the local cache once again after handing over the available keys to app_cache
+			if err := ks.Cache(); err != nil {
+				return nil, err
+			}
+			return k, nil
 		}
 		//if the list is empty, cache the keys again and get key from the cache
 		if err := ks.Cache(); err != nil {
@@ -48,7 +52,7 @@ func (ks *keyservices) Populate() *errors.RestErr {
 
 func (ks *keyservices) Cache() *errors.RestErr {
 	var key dom_keys.Key
-	results, err := key.Get(20, true)
+	results, err := key.Get(25, true)
 	if err != nil {
 		return err
 	}

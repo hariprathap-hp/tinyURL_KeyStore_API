@@ -2,5 +2,5 @@ package keystore
 
 type KGScache interface {
 	Set([]string)
-	Get() string
+	Get() []string
 }

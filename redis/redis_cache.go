@@ -36,9 +36,9 @@ func (cache *redisCache) Set(keys []string) {
 	client.LPush("kgs", keys)
 }
 
-func (cache *redisCache) Get() string {
+func (cache *redisCache) Get() []string {
 	client := cache.getClient()
-	key := client.LPop("kgs")
-	fmt.Println(key.Val())
-	return key.Val()
+	result := client.LRange("kgs", 0, -1)
+	client.Del("kgs")
+	return result.Val()
 }

@@ -1,6 +1,7 @@
 package keys
 
 import (
+	"fmt"
 	"net/http"
 	"test3/hariprathap-hp/system_design/tinyURL_KeyStore_API/services/keys_services"
 
@@ -10,10 +11,12 @@ import (
 func GetKey(c *gin.Context) {
 	s, err := keys_services.KeyService.Get()
 	if err != nil {
+		fmt.Println("JSON Error")
 		c.JSON(err.Status, err)
 		return
 	}
-	c.JSON(http.StatusOK, *s)
+	fmt.Println("Returning Key -- ", s)
+	c.JSON(http.StatusOK, s)
 }
 
 func PopulateKeys(c *gin.Context) {
