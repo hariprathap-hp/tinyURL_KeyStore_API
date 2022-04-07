@@ -3,8 +3,8 @@ package dom_kgs
 import (
 	"fmt"
 	"strings"
-	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
 	"test3/hariprathap-hp/system_design/tinyURL_KeyStore_API/client/dbCassandra"
+	"test3/hariprathap-hp/system_design/utils_repo/errors"
 )
 
 const (

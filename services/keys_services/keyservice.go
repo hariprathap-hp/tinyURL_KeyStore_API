@@ -2,9 +2,9 @@ package keys_services
 
 import (
 	"fmt"
-	"test3/hariprathap-hp/system_design/tinyURL/utils/errors"
 	dom_keys "test3/hariprathap-hp/system_design/tinyURL_KeyStore_API/domain"
 	keystore "test3/hariprathap-hp/system_design/tinyURL_KeyStore_API/redis"
+	"test3/hariprathap-hp/system_design/utils_repo/errors"
 )
 
 var kgs_cache keystore.KGScache
