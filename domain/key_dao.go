@@ -11,33 +11,44 @@ const (
 	queryPopulateKeyDB     = "INSERT into keys_avail (token_id) values (?)"
 	queryPopulateKeyUsedDB = "INSERT into keys_used (token_id) values (?)"
 	queryGetKey            = "select token_id from keys_avail limit ?"
-	queryDeleteKey         = "delete from keys_avail where token_id = ?"
+	queryDeleteKey         = "delete from keys_avail WHERE token_id IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 )
 
-func (k *Key) Get(cnt int, isCache bool) ([]Key, *errors.RestErr) {
-	iter := dbCassandra.GetSession().Query(queryGetKey, cnt).Iter()
+func (k *Key) Get(cnt int, isCache bool) ([]string, *errors.RestErr) {
+	fmt.Println("select stmt -- \n", dbCassandra.GetSession().Query(queryGetKey, cnt))
+	scanner := dbCassandra.GetSession().Query(queryGetKey, cnt).Iter().Scanner()
 
-	m := map[string]interface{}{}
-	var results []Key
-	for iter.MapScan(m) {
-		results = append(results, Key{
-			Token: m["token_id"].(string),
-		})
-		m = map[string]interface{}{}
+	var results []string
+	var iter string
+	for scanner.Next() {
+		if err := scanner.Scan(&iter); err != nil {
+			return nil, errors.NewInternalServerError(err.Error())
+		}
+		results = append(results, iter)
 	}
-	if err := iter.Close(); err != nil {
+
+	if err := scanner.Err(); err != nil {
 		return nil, errors.NewInternalServerError(err.Error())
 	}
 
+	fmt.Println("Printing results -- ", results)
+
+	delStr := getDelValues(results)
+	if err := delete(delStr); err != nil {
+		return nil, errors.NewInternalServerError(err.Message)
+	}
+
+	//prepare values to be removed in a single statement
+
 	//delete it from un_used keys table and move it to used keys table
-	for i := 0; i < cnt; i++ {
+	/*for i := 0; i < cnt; i++ {
 		if err := delete(results[i].Token); err != nil {
 			return nil, errors.NewInternalServerError(err.Message)
 		}
 		if err := k.Populate(results[i].Token); err != nil {
 			return nil, errors.NewInternalServerError(err.Message)
 		}
-	}
+	}*/
 
 	return results, nil
 }
@@ -61,8 +72,16 @@ func (k *Key) Populate(count string) *errors.RestErr {
 }
 
 func delete(key string) *errors.RestErr {
+	fmt.Println("printing key\n", key)
+	fmt.Println("Query is -- ", dbCassandra.GetSession().Query(queryDeleteKey, key))
 	if err := dbCassandra.GetSession().Query(queryDeleteKey, key).Exec(); err != nil {
-		return errors.NewInternalServerError("error while deleting key from usused database")
+		return errors.NewInternalServerError("error while deleting key from unused database")
 	}
 	return nil
+}
+
+func getDelValues(val []string) string {
+	delStr := strings.Join(val, "','")
+	delStr = "('" + delStr + "')"
+	return delStr
 }
