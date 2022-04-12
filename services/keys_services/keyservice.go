@@ -50,10 +50,7 @@ func (ks *keyservices) Cache() *errors.RestErr {
 	if err != nil {
 		return err
 	}
-	/*var keys []string
-	for _, v := range results {
-		keys = append(keys, v.Token)
-	}*/
+
 	PopulateRedis(results)
 	return nil
 }
