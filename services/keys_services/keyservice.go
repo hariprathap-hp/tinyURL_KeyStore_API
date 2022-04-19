@@ -21,7 +21,13 @@ type keyServicesInterface interface {
 
 func (ks *keyservices) Get() ([]string, *errors.RestErr) {
 	zlogger.Info("service keystore: func Get(): getting keys to be distributed to the clients")
-	for {
+	var key dom_keys.Key
+	results, err := key.Get(25, true)
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
+	/*for {
 		if k := kgs_redis.Rcache.Get(); len(k) != 0 {
 			//renew the local cache once again after handing over the available keys to app_cache
 			if err := ks.Cache(); err != nil {
@@ -33,7 +39,7 @@ func (ks *keyservices) Get() ([]string, *errors.RestErr) {
 		if err := ks.Cache(); err != nil {
 			return nil, err
 		}
-	}
+	}*/
 }
 
 func (ks *keyservices) Populate() *errors.RestErr {
